@@ -3,31 +3,29 @@
 // Created: 2018-02-03
 // Copyright ©2018 That Ain't Working, All Rights Reserved
 
-#define ENA   P2_0
-#define DIRA1 P2_1
-#define DIRA2 P2_2
-#define ENCA  P1_5
+#define MOTOR_LF P2_2
+#define MOTOR_LB P2_1
+#define ENCDR_L  P2_0
 
-#define ENB   P2_3
-#define DIRB1 P2_4
-#define DIRB2 P2_5
-#define ENCB  P1_4
+#define MOTOR_RF P2_5
+#define MOTOR_RB P2_4
+#define ENCDR_R  P2_3
 
 boolean lastFlag = false;
 unsigned long nextTickCheck;
-unsigned long tpsA = 0L;
-unsigned long tpsB = 0L;
+unsigned long tpsL = 0L;
+unsigned long tpsR = 0L;
 
-volatile unsigned long ticksA = 0L;
-volatile unsigned long ticksB = 0L;
+volatile unsigned long ticksL = 0L;
+volatile unsigned long ticksR = 0L;
 volatile boolean flag = false;
 
-void encoderAtick() {
-  ticksA++;
+void encoderLtick() {
+  ticksL++;
 }
 
-void encoderBtick() {
-  ticksB++;
+void encoderRtick() {
+  ticksR++;
 }
 
 void buttonPress() {
@@ -38,26 +36,22 @@ void setup() {
   Serial.begin(9600);
   
   Serial.println("Initializing pin modes");
-  pinMode(ENA, OUTPUT);
-  pinMode(DIRA1, OUTPUT);
-  pinMode(DIRA2, OUTPUT);
-  pinMode(ENCA, INPUT_PULLDOWN);
-  pinMode(ENB, OUTPUT);
-  pinMode(DIRB1, OUTPUT);
-  pinMode(DIRB2, OUTPUT);
-  pinMode(ENCB, INPUT_PULLDOWN);
+  pinMode(MOTOR_LF, OUTPUT);
+  pinMode(MOTOR_LB, OUTPUT);
+  pinMode(ENCDR_L, INPUT_PULLDOWN);
+  pinMode(MOTOR_RF, OUTPUT);
+  pinMode(MOTOR_RB, OUTPUT);
+  pinMode(ENCDR_R, INPUT_PULLDOWN);
   pinMode(PUSH2, INPUT_PULLUP);
 
-  digitalWrite(ENA, LOW);
-  analogWrite(DIRA1, 0);
-  analogWrite(DIRA2, 0);
-  digitalWrite(ENB, LOW);
-  analogWrite(DIRB1, 0);
-  analogWrite(DIRB2, LOW);
+  analogWrite(MOTOR_LF, 0);
+  analogWrite(MOTOR_LB, 0);
+  analogWrite(MOTOR_RF, 0);
+  analogWrite(MOTOR_RB, LOW);
 
   Serial.println("Initializing interrupts");
-  attachInterrupt(ENCA, encoderAtick, CHANGE);
-  attachInterrupt(ENCB, encoderBtick, CHANGE);
+  attachInterrupt(ENCDR_L, encoderLtick, CHANGE);
+  attachInterrupt(ENCDR_R, encoderRtick, CHANGE);
   attachInterrupt(PUSH2, buttonPress, FALLING);
 
   Serial.println("Initializing tick timer");
@@ -68,16 +62,16 @@ void loop() {
   unsigned long m = millis();
   if (m >= nextTickCheck) {
     noInterrupts();
-    tpsA = ticksA;
-    ticksA = 0L;
-    tpsB = ticksB;
-    ticksB = 0L;
+    tpsL = ticksL;
+    ticksL = 0L;
+    tpsR = ticksR;
+    ticksR = 0L;
     interrupts();
-    if (tpsA > 0L || tpsB > 0L) {
-      Serial.print("TPS A: ");
-      Serial.print(tpsA);
-      Serial.print(", B: ");
-      Serial.println(tpsB);
+    if (tpsL > 0L || tpsR > 0L) {
+      Serial.print("TPS L: ");
+      Serial.print(tpsL);
+      Serial.print(", R: ");
+      Serial.println(tpsR);
     }
     nextTickCheck = m + 1000L;
   }
@@ -85,16 +79,12 @@ void loop() {
     lastFlag = flag;
     if (flag) {
       Serial.println("Motors on");
-      analogWrite(DIRA1, 200);
-      analogWrite(DIRB1, 200);
-      digitalWrite(ENA, HIGH);
-      digitalWrite(ENB, HIGH);
+      analogWrite(MOTOR_LF, 150);
+      analogWrite(MOTOR_RF, 150);
     } else {
       Serial.println("Motors off");
-      digitalWrite(ENB, LOW);
-      digitalWrite(ENA, LOW);
-      analogWrite(DIRB1, 0);
-      analogWrite(DIRA1, 0);
+      analogWrite(MOTOR_LF, 0);
+      analogWrite(MOTOR_RF, 0);
     }
   }
 }
