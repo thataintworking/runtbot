@@ -3,13 +3,13 @@
 // Created: 2018-02-03
 // Copyright ©2018 That Ain't Working, All Rights Reserved
 
-#define MOTOR_LF P2_2
-#define MOTOR_LB P2_1
-#define ENCDR_L  P2_0
+#define MOTOR_DIR_L P2_2
+#define MOTOR_PWM_L P2_1
+#define MOTOR_ENC_L P2_0
 
-#define MOTOR_RF P2_5
-#define MOTOR_RB P2_4
-#define ENCDR_R  P2_3
+#define MOTOR_DIR_R P2_3
+#define MOTOR_PWM_R P2_4
+#define MOTOR_ENC_R P2_5
 
 boolean lastFlag = false;
 unsigned long nextTickCheck;
@@ -36,22 +36,22 @@ void setup() {
   Serial.begin(9600);
   
   Serial.println("Initializing pin modes");
-  pinMode(MOTOR_LF, OUTPUT);
-  pinMode(MOTOR_LB, OUTPUT);
-  pinMode(ENCDR_L, INPUT_PULLDOWN);
-  pinMode(MOTOR_RF, OUTPUT);
-  pinMode(MOTOR_RB, OUTPUT);
-  pinMode(ENCDR_R, INPUT_PULLDOWN);
+  pinMode(MOTOR_DIR_L, OUTPUT);
+  pinMode(MOTOR_PWM_L, OUTPUT);
+  pinMode(MOTOR_ENC_L, INPUT_PULLDOWN);
+  pinMode(MOTOR_DIR_R, OUTPUT);
+  pinMode(MOTOR_PWM_R, OUTPUT);
+  pinMode(MOTOR_ENC_R, INPUT_PULLDOWN);
   pinMode(PUSH2, INPUT_PULLUP);
 
-  analogWrite(MOTOR_LF, 0);
-  analogWrite(MOTOR_LB, 0);
-  analogWrite(MOTOR_RF, 0);
-  analogWrite(MOTOR_RB, LOW);
-
+  digitalWrite(MOTOR_DIR_L, LOW);
+  analogWrite(MOTOR_PWM_L, 0);
+  digitalWrite(MOTOR_DIR_R, LOW);
+  analogWrite(MOTOR_PWM_R, 0);
+  
   Serial.println("Initializing interrupts");
-  attachInterrupt(ENCDR_L, encoderLtick, CHANGE);
-  attachInterrupt(ENCDR_R, encoderRtick, CHANGE);
+  attachInterrupt(MOTOR_ENC_L, encoderLtick, CHANGE);
+  attachInterrupt(MOTOR_ENC_R, encoderRtick, CHANGE);
   attachInterrupt(PUSH2, buttonPress, FALLING);
 
   Serial.println("Initializing tick timer");
@@ -79,12 +79,12 @@ void loop() {
     lastFlag = flag;
     if (flag) {
       Serial.println("Motors on");
-      analogWrite(MOTOR_LF, 150);
-      analogWrite(MOTOR_RF, 150);
+      analogWrite(MOTOR_PWM_L, 150);
+      analogWrite(MOTOR_PWM_R, 150);
     } else {
       Serial.println("Motors off");
-      analogWrite(MOTOR_LF, 0);
-      analogWrite(MOTOR_RF, 0);
+      analogWrite(MOTOR_PWM_R, 0);
+      analogWrite(MOTOR_PWM_L, 0);
     }
   }
 }
