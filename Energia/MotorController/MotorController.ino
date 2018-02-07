@@ -3,15 +3,21 @@
 // Created: 2018-02-03
 // Copyright ©2018 That Ain't Working, All Rights Reserved
 
+#define MOTOR_ENA_L P1_4
 #define MOTOR_DIR_L P2_2
 #define MOTOR_PWM_L P2_1
 #define MOTOR_ENC_L P2_0
 
+#define MOTOR_ENA_R P1_5
 #define MOTOR_DIR_R P2_3
 #define MOTOR_PWM_R P2_4
 #define MOTOR_ENC_R P2_5
 
+const int debounceDelay = 50;
+
 boolean lastFlag = false;
+
+unsigned long lastDebounceTime = 0L;
 unsigned long nextTickCheck;
 unsigned long tpsL = 0L;
 unsigned long tpsR = 0L;
@@ -29,23 +35,34 @@ void encoderRtick() {
 }
 
 void buttonPress() {
-  flag = !flag;
+  unsigned long m = millis();
+  if ((m - lastDebounceTime) > debounceDelay) {
+    flag = !flag;
+    lastDebounceTime = m;
+  }
 }
 
 void setup() {
   Serial.begin(9600);
   
   Serial.println("Initializing pin modes");
+  pinMode(MOTOR_ENA_L, OUTPUT);
   pinMode(MOTOR_DIR_L, OUTPUT);
   pinMode(MOTOR_PWM_L, OUTPUT);
   pinMode(MOTOR_ENC_L, INPUT_PULLDOWN);
+  
+  pinMode(MOTOR_ENA_R, OUTPUT);
   pinMode(MOTOR_DIR_R, OUTPUT);
   pinMode(MOTOR_PWM_R, OUTPUT);
   pinMode(MOTOR_ENC_R, INPUT_PULLDOWN);
+  
   pinMode(PUSH2, INPUT_PULLUP);
 
+  digitalWrite(MOTOR_ENA_L, LOW);
   digitalWrite(MOTOR_DIR_L, LOW);
   analogWrite(MOTOR_PWM_L, 0);
+  
+  digitalWrite(MOTOR_ENA_R, LOW);
   digitalWrite(MOTOR_DIR_R, LOW);
   analogWrite(MOTOR_PWM_R, 0);
   
@@ -81,8 +98,12 @@ void loop() {
       Serial.println("Motors on");
       analogWrite(MOTOR_PWM_L, 150);
       analogWrite(MOTOR_PWM_R, 150);
+      digitalWrite(MOTOR_ENA_L, HIGH);
+      digitalWrite(MOTOR_ENA_R, HIGH);
     } else {
       Serial.println("Motors off");
+      digitalWrite(MOTOR_ENA_R, HIGH);
+      digitalWrite(MOTOR_ENA_L, HIGH);
       analogWrite(MOTOR_PWM_R, 0);
       analogWrite(MOTOR_PWM_L, 0);
     }
