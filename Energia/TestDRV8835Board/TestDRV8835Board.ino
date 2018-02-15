@@ -3,8 +3,6 @@
 // Created: 2018-02-03
 // Copyright ©2018 That Ain't Working, All Rights Reserved
 
-#include <Wire.h>
-
 #define MOTOR_DIR_L P2_2
 #define MOTOR_PWM_L P2_1
 #define MOTOR_ENC_L P2_0
@@ -13,21 +11,33 @@
 #define MOTOR_PWM_R P2_4
 #define MOTOR_ENC_R P2_5
 
+const int debounceDelay = 100;
+
+unsigned long lastDebounceTime = 0L;
 unsigned long nextTickCheck;
 unsigned long tpsL = 0L;
 unsigned long tpsR = 0L;
 
+boolean motorsOn = false;
+
 volatile unsigned long ticksL = 0L;
 volatile unsigned long ticksR = 0L;
+volatile boolean buttonFlag = false;
 
+void encoderLtick() {
+  ticksL++;
+}
+
+void encoderRtick() {
+  ticksR++;
+}
+
+void buttonPress() {
+  buttonFlag = true;
+}
 
 void setup() {
   Serial.begin(9600);
-
-  Serial.println("Initializing I2C interface");
-  Wire.begin(0x25);
-  Wire.onReceive(i2cReceive);
-  Wire.onRequest(i2cRequest);
   
   Serial.println("Initializing pin modes");
   pinMode(MOTOR_DIR_L, OUTPUT);
@@ -38,6 +48,8 @@ void setup() {
   pinMode(MOTOR_PWM_R, OUTPUT);
   pinMode(MOTOR_ENC_R, INPUT_PULLDOWN);
   
+  pinMode(PUSH2, INPUT_PULLUP);
+
   digitalWrite(MOTOR_DIR_L, LOW);
   analogWrite(MOTOR_PWM_L, 0);
   
@@ -47,11 +59,11 @@ void setup() {
   Serial.println("Initializing interrupts");
   attachInterrupt(MOTOR_ENC_L, encoderLtick, CHANGE);
   attachInterrupt(MOTOR_ENC_R, encoderRtick, CHANGE);
+  attachInterrupt(PUSH2, buttonPress, FALLING);
 
   Serial.println("Initializing tick timer");
   nextTickCheck = millis();
 }
-
 
 void loop() {
   unsigned long m = millis();
@@ -71,35 +83,21 @@ void loop() {
     }
     nextTickCheck = m + 1000L;
   }
-}
-
-
-// Interrupt handler for left wheel encoder that counts the ticks
-void encoderLtick() {
-  ticksL++;
-}
-
-
-// Interrupt handler for right wheel encoder that counts the ticks
-void encoderRtick() {
-  ticksR++;
-}
-
-
-// I2C callback for receive
-void i2cReceive(int sz) {
-  Serial.print("I2C Received: ");
-  while (Wire.available()) {
-    char c = Wire.read();
-    Serial.print(c);
+  
+  if (buttonFlag) {
+    buttonFlag = false;
+    if (m - lastDebounceTime > debounceDelay) {
+      lastDebounceTime = m;
+      motorsOn = !motorsOn;
+      if (motorsOn) {
+        Serial.println("Motors on");
+        analogWrite(MOTOR_PWM_L, 150);
+        analogWrite(MOTOR_PWM_R, 150);
+      } else {
+        Serial.println("Motors off");
+        analogWrite(MOTOR_PWM_R, 0);
+        analogWrite(MOTOR_PWM_L, 0);
+      }
+    }
   }
-  Serial.println();
 }
-
-
-// I2C callback for request
-void i2cRequest() {
-  Serial.println("I2C responding to request");
-  Wire.write("Hi, I am MSP430");
-}
-
