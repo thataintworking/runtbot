@@ -90,6 +90,7 @@ void loop() {
     if (motorsOn) stopMotors();
     else {
       startMotors();
+      motorStopTime = millis() + motorRunDelay;
     }
   }
 
@@ -102,7 +103,6 @@ void startMotors() {
   analogWrite(leftMotorPWM, 200);
   analogWrite(rightMotorPWM, 200);
   motorsOn = true;
-  motorStopTime = millis() + motorRunDelay;
 }
 
 void stopMotors() {
