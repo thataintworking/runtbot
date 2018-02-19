@@ -5,16 +5,6 @@
 
 class Wheel {
 
-  private:
-
-    String _name;                   // The name of this wheel (left, right, etc)
-    int _pwmPin;                    // Arduino pin# connected to the DRV8835 Enable pin to control speed with PWM
-    int _dirPin;                    // Arduino pin# connected to the DRV8835 Phase pin to control forward/reverse
-    volatile unsigned int _ticks;   // counter for the number of encoder ticks
-    unsigned int _tps;              // ticks-per-second measured for the previous second
-    unsigned long _nextSecond;      // next millis() value when TPS will be updated
-    int _speed;                     // requested TPS, positive for forward, negative for reverse
-  
   public:
 
     Wheel(String name, int pwmPin, int dirPin);
@@ -25,6 +15,23 @@ class Wheel {
 
     const String& name() { return _name; }
     unsigned int tps() { return _tps; }
+
+    void set_speed(speed);      // positive forward, negative reverse. 0-255 (but low speeds may not generate 
     
+    const int FORWARD = LOW;
+    const int REVERSE = HIGH;
+    
+  private:
+
+    String _name;                   // the name of this wheel (left, right, etc)
+    int _pwmPin;                    // arduino pin# connected to the DRV8835 Enable pin to control speed with PWM
+    int _dirPin;                    // arduino pin# connected to the DRV8835 Phase pin to control forward/reverse
+    volatile unsigned int _ticks;   // counter for the number of encoder ticks
+    unsigned long _nextSecond;      // next millis() value when TPS will be updated
+    unsigned int _tps;              // ticks-per-second measured for the previous second
+    int _speed;                     // requested TPS, positive for forward, negative for reverse
+    int _pwm;                       // the current PWM value
+
+    void set_pwm(pwm);
 }
 
