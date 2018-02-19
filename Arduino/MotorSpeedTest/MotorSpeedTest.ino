@@ -28,10 +28,13 @@ unsigned long debounceTime = 0L;
 unsigned long nextTickCheck;
 unsigned long tpsL = 0L;
 unsigned long tpsR = 0L;
+unsigned long lastTickTimeL = 0L;
+unsigned long lastTickTimeR = 0L;
 
 volatile unsigned long ticksL = 0L;
 volatile unsigned long ticksR = 0L;
-
+volatile unsigned long tickTimeL = 0L
+volatile unsigned long tickTimeR = 0L;
 
 void setup() {
   Serial.begin(9400);
@@ -89,7 +92,11 @@ void loop() {
       Serial.print(',');
       Serial.print(tpsL);
       Serial.print(',');
-      Serial.println(tpsR);
+      Serial.print(tickTimeL);
+      Serial.print(',');
+      Serial.print(tpsR);
+      Serial.print(',');
+      Serial.println(tickTimeR);
       motorRunCount++;
       if (motorRunCount > motorRunTicks) {
         motorSpeed -= 10;
@@ -107,7 +114,7 @@ void loop() {
     } else {
       motorRunCount = 0;
       motorSpeed = 250;
-      Serial.println("Speed,Left,Right");
+      Serial.println("PWM,Left TPS,Left Time,Right TPS,Right Time");
       startMotors(motorSpeed);
     }
   }
@@ -144,12 +151,18 @@ void stopMotors() {
 
 // Interrupt handler for left wheel encoder that counts the ticks
 void leftEncoderTick() {
+  m = millis()
+  tickTimeL = m - lastTickTimeL;
+  lastTickTimeL = m;
   ticksL++;
 }
 
 
 // Interrupt handler for right wheel encoder that counts the ticks
 void rightEncoderTick() {
+  m = millis()
+  tickTimeR = m - lastTickTimeR;
+  lastTickTimeR = m;
   ticksR++;
 }
 

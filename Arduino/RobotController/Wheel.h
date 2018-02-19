@@ -8,19 +8,18 @@ class Wheel {
   public:
 
     Wheel(String name, int pwmPin, int dirPin);
+
     ~Wheel();
 
-    void tick() { _ticks++; }   // call this method from the interrupt handler for the encoder
-    void loop();                // call this method every main loop iteration
+    void tick() { _ticks++; }       // call this method from the interrupt handler for the encoder
 
+    void loop();                    // call this method every main loop iteration
+
+    void set_speed(speed);          // positive forward, negative reverse. 0-255 (but low speeds may not generate 
+    
     const String& name() { return _name; }
     unsigned int tps() { return _tps; }
 
-    void set_speed(speed);      // positive forward, negative reverse. 0-255 (but low speeds may not generate 
-    
-    const int FORWARD = LOW;
-    const int REVERSE = HIGH;
-    
   private:
 
     String _name;                   // the name of this wheel (left, right, etc)
@@ -31,6 +30,7 @@ class Wheel {
     unsigned int _tps;              // ticks-per-second measured for the previous second
     int _speed;                     // requested TPS, positive for forward, negative for reverse
     int _pwm;                       // the current PWM value
+    unsigned long _pwmAdjustTime;   // the millis() value when PWM can be adjusted again after an adjustment is made
 
     void set_pwm(pwm);
 }

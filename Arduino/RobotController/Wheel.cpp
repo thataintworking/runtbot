@@ -5,6 +5,13 @@
 
 #include "Wheel.h"
 
+const int FORWARD = LOW;
+const int REVERSE = HIGH;
+const int MAX_PWM = 255
+const int MIN_PWM = 0;
+const int MAX_ABS_SPEED = 230;
+    
+
 Wheel::Wheel(String name, int pwmPin, int dirPin) : 
   _name(name), 
   _pwmPin(pwmPin), 
@@ -43,6 +50,7 @@ Wheel::loop() {
   
   if (absSpeed > 0) {
     if (absSpeed < _tps)
+      _pwm++;
       
     } else if (absSpeed > _tps) {
       
