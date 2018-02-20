@@ -17,27 +17,37 @@ const int piezoPin          = 45;
 
 const unsigned long debounceDelay = 300L;  // milliseconds
 
+const int tickBufSize = 5;
 const int motorRunTicks = 5;
 
 int motorRunCount = 0;
 int motorSpeed = 0;
 
 boolean motorsOn = false;
+boolean firstSecond = true;
 
 unsigned long debounceTime = 0L;
 unsigned long nextTickCheck;
 unsigned long tpsL = 0L;
 unsigned long tpsR = 0L;
-unsigned long lastTickTimeL = 0L;
-unsigned long lastTickTimeR = 0L;
+unsigned long lastTickMicsL = 0L;
+unsigned long lastTickMicsR = 0L;
+
+int tbiL = 0;
+int tbiR = 0;
 
 volatile unsigned long ticksL = 0L;
 volatile unsigned long ticksR = 0L;
-volatile unsigned long tickTimeL = 0L
-volatile unsigned long tickTimeR = 0L;
+volatile unsigned long tickMicsBufL[tickBufSize];
+volatile unsigned long tickMicsBufR[tickBufSize];
 
 void setup() {
   Serial.begin(9400);
+
+  for (int i = 0; i < tickBufSize; i++) {
+    tickMicsBufL[i] = 0L;
+    tickMicsBufR[i] = 0L;
+  }
 
 //  Serial.println("Initializing I2C interface");
 //  Wire.begin(); // as master
@@ -75,12 +85,12 @@ void loop() {
   unsigned long m = millis();
   
   if (m >= nextTickCheck) {
-    noInterrupts();
+//    noInterrupts();
     tpsL = ticksL;
     ticksL = 0L;
     tpsR = ticksR;
     ticksR = 0L;
-    interrupts();
+//    interrupts();
 //    if (tpsL > 0L || tpsR > 0L) {
 //      Serial.print("TPS L: ");
 //      Serial.print(tpsL);
@@ -88,20 +98,36 @@ void loop() {
 //      Serial.println(tpsR);
 //    }
     if (motorsOn) {
+      unsigned long totalMicsL = 0L;
+      unsigned long totalMicsR = 0L;
+
+//      noInterrupts();
+      for (int i = 0; i < tickBufSize; i++) {
+        totalMicsL += tickMicsBufL[i];
+        totalMicsR += tickMicsBufR[i];
+      }
+//      interrupts();
+      
       Serial.print(motorSpeed);
       Serial.print(',');
       Serial.print(tpsL);
       Serial.print(',');
-      Serial.print(tickTimeL);
+      Serial.print(totalMicsL/tickBufSize);
       Serial.print(',');
       Serial.print(tpsR);
       Serial.print(',');
-      Serial.println(tickTimeR);
-      motorRunCount++;
-      if (motorRunCount > motorRunTicks) {
-        motorSpeed -= 10;
-        changeMotorSpeed(motorSpeed);
-        motorRunCount = 0;
+      Serial.print(totalMicsR/tickBufSize);
+      Serial.println();
+      
+      if (firstSecond) {
+        firstSecond = false;
+      } else {
+        motorRunCount++;
+        if (motorRunCount > motorRunTicks) {
+          motorSpeed -= 10;
+          changeMotorSpeed(motorSpeed);
+          motorRunCount = 0;
+        }
       }
     }
     nextTickCheck = m + 1000L;
@@ -114,7 +140,7 @@ void loop() {
     } else {
       motorRunCount = 0;
       motorSpeed = 250;
-      Serial.println("PWM,Left TPS,Left Time,Right TPS,Right Time");
+      Serial.println("PWM,Left TPS,Left Mics,Right TPS,Right Mics");
       startMotors(motorSpeed);
     }
   }
@@ -151,18 +177,20 @@ void stopMotors() {
 
 // Interrupt handler for left wheel encoder that counts the ticks
 void leftEncoderTick() {
-  m = millis()
-  tickTimeL = m - lastTickTimeL;
-  lastTickTimeL = m;
+  unsigned long mics = micros();
+  tickMicsBufL[tbiL] = mics - lastTickMicsL;
+  lastTickMicsL = mics;
+  if (++tbiL >= tickBufSize) tbiL = 0;
   ticksL++;
 }
 
 
 // Interrupt handler for right wheel encoder that counts the ticks
 void rightEncoderTick() {
-  m = millis()
-  tickTimeR = m - lastTickTimeR;
-  lastTickTimeR = m;
+  unsigned long mics = micros();
+  tickMicsBufR[tbiR] = mics - lastTickMicsR;
+  lastTickMicsR = mics;
+  if (++tbiR >= tickBufSize) tbiR = 0;
   ticksR++;
 }
 
