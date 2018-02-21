@@ -5,61 +5,45 @@
 
 #include <Wire.h>
 #include "pitches.h"
+#include "Wheel.h"
 
-const int leftMotorDir      = 10;
-const int leftMotorPWM      = 9;
+const int leftMotorDir      = 7;
+const int leftMotorPWM      = 6;
 const int leftMotorEncoder  = 3;
-const int rightMotorDir     = 8;
-const int rightMotorPWM     = 7;
+const int rightMotorDir     = 9;
+const int rightMotorPWM     = 8;
 const int rightMotorEncoder = 2;
 const int testButton        = 53;
 const int piezoPin          = 45;
 
 const unsigned long debounceDelay = 300L;  // milliseconds
-const unsigned long motorRunDelay = 3000L; // milliseconds
+
+unsigned long debounceTime = 0L;
 
 boolean motorsOn = false;
 
+Wheel* leftWheel;
+Wheel* rightWheel;
 
-unsigned long debounceTime = 0L;
-unsigned long motorStopTime = 0;
-unsigned long nextTickCheck;
-unsigned long tpsL = 0L;
-unsigned long tpsR = 0L;
-
-volatile unsigned long ticksL = 0L;
-volatile unsigned long ticksR = 0L;
-
+const boolean DEBUG = true;
 
 void setup() {
-  Serial.begin(9400);
+  Serial.begin(9600);
+
+  leftWheel = new Wheel("Left", leftMotorPWM, leftMotorDir, DEBUG);
+  rightWheel = new Wheel("Right", rightMotorPWM, rightMotorDir, DEBUG);
 
   Serial.println("Initializing I2C interface");
   Wire.begin(); // as master
   
   Serial.println("Initializing pin modes");
-  pinMode(leftMotorDir, OUTPUT);
-  pinMode(leftMotorPWM, OUTPUT);
   pinMode(leftMotorEncoder, INPUT);
-  
-  pinMode(rightMotorDir, OUTPUT);
-  pinMode(rightMotorPWM, OUTPUT);
   pinMode(rightMotorEncoder, INPUT);
-  
   pinMode(testButton, INPUT_PULLUP);
   
-  digitalWrite(leftMotorDir, LOW);
-  analogWrite(leftMotorPWM, 0);
-  
-  digitalWrite(rightMotorDir, LOW);
-  analogWrite(rightMotorPWM, 0);
-
   Serial.println("Initializing interrupts");
   attachInterrupt(digitalPinToInterrupt(leftMotorEncoder), leftEncoderTick, CHANGE);
   attachInterrupt(digitalPinToInterrupt(rightMotorEncoder), rightEncoderTick, CHANGE);
-
-  Serial.println("Initializing tick timer");
-  nextTickCheck = millis();
 
   Serial.println("Playing start tone");
   playTada();
@@ -69,59 +53,43 @@ void setup() {
 void loop() {
   unsigned long m = millis();
   
-  if (m >= nextTickCheck) {
-    noInterrupts();
-    tpsL = ticksL;
-    ticksL = 0L;
-    tpsR = ticksR;
-    ticksR = 0L;
-    interrupts();
-    if (tpsL > 0L || tpsR > 0L) {
-      Serial.print("TPS L: ");
-      Serial.print(tpsL);
-      Serial.print(", R: ");
-      Serial.println(tpsR);
-    }
-    nextTickCheck = m + 1000L;
-  }
-
   if (!digitalRead(testButton) && (m > debounceDelay)) {
     debounceTime = m + debounceDelay;
     if (motorsOn) stopMotors();
-    else {
-      startMotors();
-      motorStopTime = millis() + motorRunDelay;
-    }
+    else startMotors();
   }
 
-  if (motorsOn && m > motorStopTime) stopMotors();
+  leftWheel->loop(m);
+  rightWheel->loop(m);
 }
 
 void startMotors() {
   playCharge();
   Serial.println("Motors on");
-  analogWrite(leftMotorPWM, 200);
-  analogWrite(rightMotorPWM, 200);
+  leftWheel->setSpeed(20);
+  rightWheel->setSpeed(20);
   motorsOn = true;
 }
 
 void stopMotors() {
   Serial.println("Motors off");
-  analogWrite(rightMotorPWM, 0);
-  analogWrite(leftMotorPWM, 0);
+  leftWheel->setSpeed(0);
+  rightWheel->setSpeed(0);
   motorsOn = false;
+  playDaTa();
 }
 
 // Interrupt handler for left wheel encoder that counts the ticks
 void leftEncoderTick() {
-  ticksL++;
+  leftWheel->tick();
 }
 
 
 // Interrupt handler for right wheel encoder that counts the ticks
 void rightEncoderTick() {
-  ticksR++;
+  rightWheel->tick();
 }
+
 
 void playCharge() {
   tone(piezoPin, NOTE_C5, 150);
@@ -139,10 +107,20 @@ void playCharge() {
   noTone(piezoPin);
 }
 
+
 void playTada() {
   tone(piezoPin, NOTE_C5, 200);
   delay(200);
   tone(piezoPin, NOTE_G5, 500);
+  delay(500);
+  noTone(piezoPin);
+}
+
+
+void playDaTa() {
+  tone(piezoPin, NOTE_G5, 200);
+  delay(200);
+  tone(piezoPin, NOTE_C5, 500);
   delay(500);
   noTone(piezoPin);
 }
