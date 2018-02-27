@@ -66,7 +66,7 @@ void Wheel::loop(unsigned long m) {
         if (_debug) Serial.print(tickTime);
         if (_debug) Serial.print(") is less than target (");
         if (_debug) Serial.print(targetTickTime);
-        if (_debug) Serial.print(") decreasing PWM to ");
+        if (_debug) Serial.print(") decreasing INIT_PWM to ");
         if (_debug) Serial.println(_pwm);
         setPWM(_pwm);
       } else if (tickTime > targetTickTime) {
@@ -77,7 +77,7 @@ void Wheel::loop(unsigned long m) {
         if (_debug) Serial.print(tickTime);
         if (_debug) Serial.print(") is greater than target (");
         if (_debug) Serial.print(targetTickTime);
-        if (_debug) Serial.print(") increasing PWM to ");
+        if (_debug) Serial.print(") increasing INIT_PWM to ");
         if (_debug) Serial.println(_pwm);
         setPWM(_pwm);
       }
