@@ -14,7 +14,7 @@ class Wheel {
 
     Wheel(String label, int pwmPin, int dirPin, boolean debug);
 
-    Wheel::Wheel(String label, int pwmPin, int dirPin) : Wheel(label, pwmPin, dirPin, false) {}
+    Wheel(String label, int pwmPin, int dirPin) : Wheel(label, pwmPin, dirPin, false) {}
 
     ~Wheel();
 
