@@ -12,9 +12,9 @@ class Wheel {
 
   public:
 
-    Wheel(String label, int pwmPin, int dirPin, boolean debug);
+    Wheel(String label, int pwmPin, int dirPin, int adjust, boolean debug);
 
-    Wheel(String label, int pwmPin, int dirPin) : Wheel(label, pwmPin, dirPin, false) {}
+    Wheel(String label, int pwmPin, int dirPin, int adjust) : Wheel(label, pwmPin, dirPin, adjust, false) {}
 
     ~Wheel();
 
@@ -45,6 +45,7 @@ class Wheel {
     int _dirPin;                                // arduino pin# connected to the DRV8835 Phase pin to control forward/reverse
     int _speed;                                 // requested speed 0-20, positive for forward, negative for reverse
     int _pwm;                                   // the current PWM value
+    int _adjust;                                // manual PWM adjustment to help the wheels start out 
 
     String _label;                              // the name of this wheel (left, right, etc)
 

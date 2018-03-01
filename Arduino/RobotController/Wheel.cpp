@@ -22,23 +22,28 @@ const int INIT_PWM[] = {
   150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250
 };
 
-Wheel::Wheel(String label, int pwmPin, int dirPin, boolean debug) : 
+Wheel::Wheel(String label, int pwmPin, int dirPin, int adjust, boolean debug) : 
   _lastTickTime(0L),
   _nextAdjTime(0L),
   _tbix(0),
   _pwmPin(pwmPin), 
-  _dirPin(dirPin), 
+  _dirPin(dirPin),
+  _adjust(adjust),
   _speed(0),
   _pwm(0),
   _label(label),
   _debug(debug)
 { 
-  if (_debug) Serial.print(label);
-  if (_debug) Serial.print(" Wheel: ");
-  if (_debug) Serial.print("Initializing pwmPin=");
-  if (_debug) Serial.print(pwmPin);
-  if (_debug) Serial.print(", dirPin=");
-  if (_debug) Serial.println(dirPin);
+  if (_debug) {
+    Serial.print(label);
+    Serial.print(" Wheel: ");
+    Serial.print("Initializing pwmPin=");
+    Serial.print(pwmPin);
+    Serial.print(", dirPin=");
+    Serial.print(dirPin);
+    Serial.print(", adjust=");
+    Serial.println(adjust);
+  }
   for (int i = 0; i < TBSZ; i++) _tickBuf[i] = 0L;
   pinMode(_pwmPin, OUTPUT);
   pinMode(_dirPin, OUTPUT);
@@ -60,25 +65,29 @@ void Wheel::loop(unsigned long m) {
     if (tickTime > 0) {
       if (tickTime < targetTickTime) {
         _pwm--;
-        if (_debug) Serial.print(_label);
-        if (_debug) Serial.print(" Wheel: ");
-        if (_debug) Serial.print("tickTime (");
-        if (_debug) Serial.print(tickTime);
-        if (_debug) Serial.print(") is less than target (");
-        if (_debug) Serial.print(targetTickTime);
-        if (_debug) Serial.print(") decreasing PWM to ");
-        if (_debug) Serial.println(_pwm);
+        if (_debug) {
+          Serial.print(_label);
+          Serial.print(" Wheel: ");
+          Serial.print("tickTime (");
+          Serial.print(tickTime);
+          Serial.print(") is less than target (");
+          Serial.print(targetTickTime);
+          Serial.print(") decreasing PWM to ");
+          Serial.println(_pwm);
+        }
         setPWM(_pwm);
       } else if (tickTime > targetTickTime) {
         _pwm++;
-        if (_debug) Serial.print(_label);
-        if (_debug) Serial.print(" Wheel: ");
-        if (_debug) Serial.print("tickTime (");
-        if (_debug) Serial.print(tickTime);
-        if (_debug) Serial.print(") is greater than target (");
-        if (_debug) Serial.print(targetTickTime);
-        if (_debug) Serial.print(") increasing PWM to ");
-        if (_debug) Serial.println(_pwm);
+        if (_debug) {
+          Serial.print(_label);
+          Serial.print(" Wheel: ");
+          Serial.print("tickTime (");
+          Serial.print(tickTime);
+          Serial.print(") is greater than target (");
+          Serial.print(targetTickTime);
+          Serial.print(") increasing PWM to ");
+          Serial.println(_pwm);
+        }
         setPWM(_pwm);
       }
     }
@@ -106,26 +115,32 @@ unsigned int Wheel::avgTickTime() {
 
 void Wheel::setSpeed(int s) {
   if ((s > 0 && _speed < 0) || (s < 0 && _speed > 0)) {
-    if (_debug) Serial.print(_label);
-    if (_debug) Serial.print(" Wheel: ");
-    if (_debug) Serial.println("Stopping motor to prepare for direction change.");
+    if (_debug) {
+      Serial.print(_label);
+      Serial.print(" Wheel: ");
+      Serial.println("Stopping motor to prepare for direction change.");
+    }
     setPWM(0);
     delay(ADJ_DELAY);
   }
-  
+
   if (s > MAX_FWD_SPEED) _speed = MAX_FWD_SPEED;
   else if (s < MAX_REV_SPEED) _speed = MAX_REV_SPEED;
   else _speed = s;
   
-  if (_debug) Serial.print(_label);
-  if (_debug) Serial.print(" Wheel: ");
-  if (_debug) Serial.print("Setting directrion to ");
-  if (_debug) Serial.print(_speed < 0 ? "REVERSE" : "FORWARD");
+  if (_debug) {
+    Serial.print(_label);
+    Serial.print(" Wheel: ");
+    Serial.print("Setting directrion to ");
+    Serial.print(_speed < 0 ? "REVERSE" : "FORWARD");
+  }
   digitalWrite(_dirPin, _speed < 0 ? REVERSE : FORWARD);
   
-  if (_debug) Serial.print(" and speed to ");
-  if (_debug) Serial.println(_speed);
-  setPWM(INIT_PWM[abs(_speed)]);
+  if (_debug) {
+    Serial.print(" and speed to ");
+    Serial.println(_speed);
+  }
+  setPWM(INIT_PWM[abs(_speed)] + _adjust);
 }
 
 
