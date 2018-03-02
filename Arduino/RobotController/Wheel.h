@@ -12,21 +12,28 @@ class Wheel {
 
   public:
 
-    Wheel(String label, int pwmPin, int dirPin, int adjust, boolean debug);
+    Wheel(String label, int pwmPin, int dirPin, int initoff, boolean debug);
 
-    Wheel(String label, int pwmPin, int dirPin, int adjust) : Wheel(label, pwmPin, dirPin, adjust, false) {}
+    Wheel(String label, int pwmPin, int dirPin) : Wheel(label, pwmPin, dirPin, 0, false) {}
 
     ~Wheel();
 
     void tick();                                // call this method from the interrupt handler for the encoder
 
-    void loop(unsigned long m);                 // call this method every main loop iteration passing the current millis
+    void adjust(unsigned long m);               // call this method every main loop iteration passing the current millis
 
     void setSpeed(int s);                       // desired speed 0-20, positive forward, negative reverse
 
     unsigned int avgTickTime();                 // returns the average tick interval using the values in the tick buffer
-    
-    const String& label() { return _label; }
+
+    void setLabel(const String& label) { _label = label; }
+    const String& getLabel() { return _label; }
+
+    void setDebug(boolean debug) { _debug = debug; }
+    boolean getDebug() { return _debug; }
+
+    void setInitOffset(int initoff) { _initoff = initoff; }
+    int getInitOffset() { return _initoff; }
 
     static const int MAX_FWD_SPEED = 20;
     static const int MAX_REV_SPEED = -20;
@@ -45,7 +52,7 @@ class Wheel {
     int _dirPin;                                // arduino pin# connected to the DRV8835 Phase pin to control forward/reverse
     int _speed;                                 // requested speed 0-20, positive for forward, negative for reverse
     int _pwm;                                   // the current PWM value
-    int _adjust;                                // manual PWM adjustment to help the wheels start out 
+    int _initoff;                               // manual PWM adjustment to help the wheels start out 
 
     String _label;                              // the name of this wheel (left, right, etc)
 

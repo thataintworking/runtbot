@@ -22,13 +22,13 @@ const int INIT_PWM[] = {
   150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250
 };
 
-Wheel::Wheel(String label, int pwmPin, int dirPin, int adjust, boolean debug) : 
+Wheel::Wheel(String label, int pwmPin, int dirPin, int initoff, boolean debug) : 
   _lastTickTime(0L),
   _nextAdjTime(0L),
   _tbix(0),
   _pwmPin(pwmPin), 
   _dirPin(dirPin),
-  _adjust(adjust),
+  _initoff(initoff),
   _speed(0),
   _pwm(0),
   _label(label),
@@ -41,8 +41,8 @@ Wheel::Wheel(String label, int pwmPin, int dirPin, int adjust, boolean debug) :
     Serial.print(pwmPin);
     Serial.print(", dirPin=");
     Serial.print(dirPin);
-    Serial.print(", adjust=");
-    Serial.println(adjust);
+    Serial.print(", initoff=");
+    Serial.println(initoff);
   }
   for (int i = 0; i < TBSZ; i++) _tickBuf[i] = 0L;
   pinMode(_pwmPin, OUTPUT);
@@ -58,7 +58,7 @@ Wheel::~Wheel() {
 }
 
 
-void Wheel::loop(unsigned long m) {
+void Wheel::adjust(unsigned long m) {
   if (_speed && m > _nextAdjTime) {
     unsigned int targetTickTime = TTT[abs(_speed)];
     unsigned int tickTime = avgTickTime();
@@ -140,7 +140,7 @@ void Wheel::setSpeed(int s) {
     Serial.print(" and speed to ");
     Serial.println(_speed);
   }
-  setPWM(INIT_PWM[abs(_speed)] + _adjust);
+  setPWM(INIT_PWM[abs(_speed)] + _initoff);
 }
 
 

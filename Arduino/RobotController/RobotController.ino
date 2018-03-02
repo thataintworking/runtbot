@@ -41,6 +41,9 @@ Wheel* rightWheel;
 MinIMU9 imu;
 
 void setup() {
+  // set Arduino Mega's timer 4 (pins 6, 7, 8) to freq 31250 to work better with the motors
+  TCCR4B = TCCR4B & 0b11111000 | 0x01;
+  
   Serial.begin(9600);
 
   Wire.begin(); // as master
@@ -107,11 +110,11 @@ void loop() {
 //  }
 
   if (motorsOn) {
-    if (m >= stopTime) {
-      stopMotors();
-    } else {
-      leftWheel->loop(m);
-      rightWheel->loop(m);
+//    if (m >= stopTime) {
+//      stopMotors();
+//    } else {
+//      leftWheel->adjust(m);
+//      rightWheel->adjust(m);
       if (m > reportTime) {
         reportTime = m + 500UL;
         Serial.print("Tick Time: L=");
@@ -119,7 +122,7 @@ void loop() {
         Serial.print("  R=");
         Serial.println(rightWheel->avgTickTime());
       }
-    }
+//    }
   }
 }
 
