@@ -1,0 +1,17 @@
+[Unit]
+Description=Low Battery Monitor
+After=network.target
+
+[Service]
+User=root
+Group=root
+WorkingDirectory=/home/pi/Projects/runtbot
+Environment="PYTHONPATH=/home/pi/Projects/runtbot" "PATH=/home/pi/Projects/runtbot/venv/bin"
+ExecStart=/home/pi/Projects/runtbot/venv/bin/python3 /home/pi/Projects/runtbot/runtbot/lbomon.py
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=lbomon
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
