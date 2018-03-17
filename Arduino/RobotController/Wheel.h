@@ -12,9 +12,9 @@ class Wheel {
 
   public:
 
-    Wheel(String label, int pwmPin, int dirPin1, int dirPin2, int initoff, boolean debug);
+    Wheel(String label, int pwmPin, int inaPin, int inbPin, int initoff, boolean debug);
 
-    Wheel(String label, int pwmPin, int dirPin1, dirPin2) : Wheel(label, pwmPin, dirPin1, dirPin2, 0, false) {}
+    Wheel(String label, int pwmPin, int inaPin, inbPin) : Wheel(label, pwmPin, inaPin, inbPin, 0, false) {}
 
     ~Wheel();
 
@@ -43,14 +43,14 @@ class Wheel {
     static const int TBSZ = 5;                  // tick buffer size
 
     volatile unsigned long _tickBuf[TBSZ];      // tick buffer -- array containing the last several tick intervals
-    
+
     unsigned long _lastTickTime;                // the last time the tick() method was called. Used to calculate the tick interval
     unsigned long _nextAdjTime;                 // the millis() value when PWM can be adjusted again after an adjustment is made
 
     int _tbix;                                  // tick buffer index -- the element where the next tick interval will be stored
     int _pwmPin;                                // arduino pin# connected to the TB6612FNG Motor Controller PWM pin to control speed
-    int _dirPin1;                               // arduino pin# connected to the TB6612FNG Motor Controller DIR1 pin
-    int _dirPin2;                               // arduino pin# connected to the TB6612FNG Motor Controller DIR2 pin
+    int _inaPin;                                // arduino pin# connected to the TB6612FNG Motor Controller INA pin
+    int _inbPin;                                // arduino pin# connected to the TB6612FNG Motor Controller INB pin
     int _speed;                                 // requested speed 0-25, positive for forward, negative for reverse
     int _pwm;                                   // the current PWM value
     int _initoff;                               // manual PWM adjustment to help account for differences in the motors

@@ -3,51 +3,60 @@
 // Created: 2018-02-18
 // Copyright ©2018 That Ain't Working, All Rights Reserved
 
+// TB6612FNG Truth Table
+//
+//      INA     INB     Effect
+//      ----    ----    --------------------
+//      LOW     LOW     Brake
+//      LOW     HIGH    Forward
+//      HIGH    LOW     Reverse
+//      HIGH    HIGH    Coast (do not use)
+
 #include "Wheel.h"
 
 const boolean _debug = true;
 
 const unsigned long ADJ_DELAY = 200L;
 
-Wheel::Wheel(String label, int pwmPin, int dirPin1, int dirPin2, int initoff, boolean debug) :
+Wheel::Wheel(String label, int pwmPin, int inaPin, int inbPin, int initoff, boolean debug) :
   _lastTickTime(0L),
   _nextAdjTime(0L),
   _tbix(0),
-  _pwmPin(pwmPin), 
-  _dirPin1(dirPin1),
-  _dirPin1(dirPin2),
+  _pwmPin(pwmPin),
+  _inaPin(inaPin),
+  _inaPin(inbPin),
   _initoff(initoff),
   _speed(0),
   _pwm(0),
   _label(label),
   _debug(debug)
-{ 
+{
   if (_debug) {
     Serial.print(label);
     Serial.print(" Wheel: ");
     Serial.print("Initializing pwmPin=");
     Serial.print(pwmPin);
-    Serial.print(", dirPin1=");
-    Serial.print(dirPin1);
-    Serial.print(", dirPin2=");
-    Serial.print(dirPin2);
+    Serial.print(", inaPin=");
+    Serial.print(inaPin);
+    Serial.print(", inbPin=");
+    Serial.print(inbPin);
     Serial.print(", initoff=");
     Serial.println(initoff);
   }
   for (int i = 0; i < TBSZ; i++) _tickBuf[i] = 0L;
   pinMode(_pwmPin, OUTPUT);
-  pinMode(_dirPin1, OUTPUT);
-  pinMode(_dirPin2, OUTPUT);
+  pinMode(_inaPin, OUTPUT);
+  pinMode(_inbPin, OUTPUT);
   analogWrite(_pwmPin, 0);
-  digitalWrite(_dirPin1, LOW);
-  digitalWrite(_dirPin2, LOW);
+  digitalWrite(_inaPin, LOW);
+  digitalWrite(_inbPin, LOW);
 }
 
 
-Wheel::~Wheel() { 
+Wheel::~Wheel() {
   analogWrite(_pwmPin, 0);
-  digitalWrite(_dirPin1, LOW);
-  digitalWrite(_dirPin2, LOW);
+  digitalWrite(_inaPin, LOW);
+  digitalWrite(_inbPin, LOW);
 }
 
 
@@ -84,7 +93,7 @@ void Wheel::adjust(unsigned long m) {
         setPWM(_pwm);
       }
     }
-    _nextAdjTime = m + ADJ_DELAY; 
+    _nextAdjTime = m + ADJ_DELAY;
   }
 }
 
@@ -120,7 +129,7 @@ void Wheel::setSpeed(int s) {
   if (s > MAX_FWD_SPEED) _speed = MAX_FWD_SPEED;
   else if (s < MAX_REV_SPEED) _speed = MAX_REV_SPEED;
   else _speed = s;
-  
+
   if (_debug) {
     Serial.print(_label);
     Serial.print(" Wheel: ");
@@ -128,7 +137,7 @@ void Wheel::setSpeed(int s) {
     Serial.print(_speed < 0 ? "REVERSE" : "FORWARD");
   }
   digitalWrite(_dirPin, _speed < 0 ? REVERSE : FORWARD);
-  
+
   if (_debug) {
     Serial.print(" and speed to ");
     Serial.println(_speed);
