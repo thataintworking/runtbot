@@ -10,16 +10,18 @@
 
 const boolean WHEEL_DEBUG = false;
 
-const int LEFT_MOTOR_DIR  = 7;
-const int LEFT_MOTOR_PWM  = 6;
-const int LEFT_MOTOR_ENC  = 3;
-const int RIGHT_MOTOR_DIR = 9;
-const int RIGHT_MOTOR_PWM = 8;
-const int RIGHT_MOTOR_ENC = 2;
-const int TEST_BTN        = 53;
-const int PLUS_BTN        = A6;
-const int MINUS_BTN       = A7;
-const int PIEZO           = 45;
+const int LEFT_DIR1     = 37;
+const int LEFT_DIR2     = 35;
+const int LEFT_PWM      = 9;    // timer 2
+const int LEFT_ENC      = 3;
+const int RIGHT_DIR1    = 39;
+const int RIGHT_DIR2    = 41;
+const int RIGHT_PWM     = 10;   // timer 2
+const int RIGHT_ENC     = 2;
+const int TEST_BTN      = 53;
+const int PLUS_BTN      = A6;
+const int MINUS_BTN     = A7;
+const int PIEZO         = 45;
 
 const unsigned long DEBOUNCE_DELAY = 300UL;       // milliseconds
 const unsigned long SENSOR_REPORT_FREQ = 1000UL;  // milliseconds
@@ -41,8 +43,8 @@ Wheel* rightWheel;
 MinIMU9 imu;
 
 void setup() {
-  // set Arduino Mega's timer 4 (pins 6, 7, 8) to freq 31250 to work better with the motors
-  TCCR4B = TCCR4B & 0b11111000 | 0x01;
+  // set Arduino Mega's timer 2 (pins 9 and 10) to freq 31250 to work better with the motors
+  TCCR2B = TCCR2B & 0b11111000 | 0x01;
   
   Serial.begin(9600);
 
@@ -51,17 +53,17 @@ void setup() {
   if (!imu.setup())
     Serial.println("Failed to setup IMU!");
 
-  leftWheel = new Wheel("Left", LEFT_MOTOR_PWM, LEFT_MOTOR_DIR, 0, WHEEL_DEBUG);
-  rightWheel = new Wheel("Right", RIGHT_MOTOR_PWM, RIGHT_MOTOR_DIR, 0, WHEEL_DEBUG);
+  leftWheel = new Wheel("Left", LEFT_PWM, LEFT_DIR1, LEFT_DIR2, 0, WHEEL_DEBUG);
+  rightWheel = new Wheel("Right", RIGHT_PWM, RIGHT_DIR1, RIGHT_DIR2, 0, WHEEL_DEBUG);
 
-  pinMode(LEFT_MOTOR_ENC, INPUT);
-  pinMode(RIGHT_MOTOR_ENC, INPUT);
+  pinMode(LEFT_ENC, INPUT);
+  pinMode(RIGHT_ENC, INPUT);
   pinMode(TEST_BTN, INPUT_PULLUP);
   pinMode(PLUS_BTN, INPUT_PULLUP);
   pinMode(MINUS_BTN, INPUT_PULLUP);
 
-  attachInterrupt(digitalPinToInterrupt(LEFT_MOTOR_ENC), leftEncoderTick, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(RIGHT_MOTOR_ENC), rightEncoderTick, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(LEFT_ENC), leftEncoderTick, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(RIGHT_ENC), rightEncoderTick, CHANGE);
 
   playTaDa();
 }

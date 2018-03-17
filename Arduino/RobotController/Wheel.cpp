@@ -7,27 +7,15 @@
 
 const boolean _debug = true;
 
-const int FORWARD = LOW;
-const int REVERSE = HIGH;
-
 const unsigned long ADJ_DELAY = 200L;
 
-const unsigned int TTT[] = {
-  -1, 30000, 25000, 20000, 17500, 15250, 13000, 11500, 10500, 9500, 
-  8800, 8000, 7500, 7000, 6700, 6400, 6200, 6000, 5750, 5500, 5300
-};
-
-const int INIT_PWM[] = {
-  0, 60, 70, 80, 90, 100, 110, 120, 130, 140, 
-  150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250
-};
-
-Wheel::Wheel(String label, int pwmPin, int dirPin, int initoff, boolean debug) : 
+Wheel::Wheel(String label, int pwmPin, int dirPin1, int dirPin2, int initoff, boolean debug) :
   _lastTickTime(0L),
   _nextAdjTime(0L),
   _tbix(0),
   _pwmPin(pwmPin), 
-  _dirPin(dirPin),
+  _dirPin1(dirPin1),
+  _dirPin1(dirPin2),
   _initoff(initoff),
   _speed(0),
   _pwm(0),
@@ -39,22 +27,27 @@ Wheel::Wheel(String label, int pwmPin, int dirPin, int initoff, boolean debug) :
     Serial.print(" Wheel: ");
     Serial.print("Initializing pwmPin=");
     Serial.print(pwmPin);
-    Serial.print(", dirPin=");
-    Serial.print(dirPin);
+    Serial.print(", dirPin1=");
+    Serial.print(dirPin1);
+    Serial.print(", dirPin2=");
+    Serial.print(dirPin2);
     Serial.print(", initoff=");
     Serial.println(initoff);
   }
   for (int i = 0; i < TBSZ; i++) _tickBuf[i] = 0L;
   pinMode(_pwmPin, OUTPUT);
-  pinMode(_dirPin, OUTPUT);
+  pinMode(_dirPin1, OUTPUT);
+  pinMode(_dirPin2, OUTPUT);
   analogWrite(_pwmPin, 0);
-  digitalWrite(_dirPin, FORWARD);     
+  digitalWrite(_dirPin1, LOW);
+  digitalWrite(_dirPin2, LOW);
 }
 
 
 Wheel::~Wheel() { 
   analogWrite(_pwmPin, 0);
-  digitalWrite(_dirPin, FORWARD);     
+  digitalWrite(_dirPin1, LOW);
+  digitalWrite(_dirPin2, LOW);
 }
 
 
