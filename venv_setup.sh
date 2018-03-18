@@ -12,8 +12,7 @@ fi
 
 rm -rf venv
 
-# always-copy needed because windows is stupid
-virtualenv -p python3 --always-copy venv
+python3 -m venv venv
 
 if [ ! -f ./venv/bin/activate ]; then
     echo "Failed to create the virtualenv directory"
