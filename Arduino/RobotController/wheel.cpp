@@ -1,4 +1,4 @@
-// Wheel.h
+// wheel.cpp
 // Author: Ron Smith
 // Created: 2018-02-18
 // Copyright ©2018 That Ain't Working, All Rights Reserved
@@ -12,7 +12,7 @@
 //      HIGH    LOW     Reverse
 //      HIGH    HIGH    Coast (do not use)
 
-#include "Wheel.h"
+#include "wheel.h"
 
 const boolean _debug = true;
 
@@ -24,7 +24,7 @@ Wheel::Wheel(String label, int pwmPin, int inaPin, int inbPin, int initoff, bool
   _tbix(0),
   _pwmPin(pwmPin),
   _inaPin(inaPin),
-  _inaPin(inbPin),
+  _inbPin(inbPin),
   _initoff(initoff),
   _speed(0),
   _pwm(0),
@@ -57,44 +57,6 @@ Wheel::~Wheel() {
   analogWrite(_pwmPin, 0);
   digitalWrite(_inaPin, LOW);
   digitalWrite(_inbPin, LOW);
-}
-
-
-void Wheel::adjust(unsigned long m) {
-  if (_speed && m > _nextAdjTime) {
-    unsigned int targetTickTime = TTT[abs(_speed)];
-    unsigned int tickTime = avgTickTime();
-    if (tickTime > 0) {
-      if (tickTime < targetTickTime) {
-        _pwm--;
-        if (_debug) {
-          Serial.print(_label);
-          Serial.print(" Wheel: ");
-          Serial.print("tickTime (");
-          Serial.print(tickTime);
-          Serial.print(") is less than target (");
-          Serial.print(targetTickTime);
-          Serial.print(") decreasing PWM to ");
-          Serial.println(_pwm);
-        }
-        setPWM(_pwm);
-      } else if (tickTime > targetTickTime) {
-        _pwm++;
-        if (_debug) {
-          Serial.print(_label);
-          Serial.print(" Wheel: ");
-          Serial.print("tickTime (");
-          Serial.print(tickTime);
-          Serial.print(") is greater than target (");
-          Serial.print(targetTickTime);
-          Serial.print(") increasing PWM to ");
-          Serial.println(_pwm);
-        }
-        setPWM(_pwm);
-      }
-    }
-    _nextAdjTime = m + ADJ_DELAY;
-  }
 }
 
 
@@ -136,13 +98,14 @@ void Wheel::setSpeed(int s) {
     Serial.print("Setting directrion to ");
     Serial.print(_speed < 0 ? "REVERSE" : "FORWARD");
   }
-  digitalWrite(_dirPin, _speed < 0 ? REVERSE : FORWARD);
+  digitalWrite(_inaPin, _speed >= 0 ? LOW : HIGH);
+  digitalWrite(_inbPin, _speed <= 0 ? LOW : HIGH);
 
   if (_debug) {
     Serial.print(" and speed to ");
     Serial.println(_speed);
   }
-  setPWM(INIT_PWM[abs(_speed)] + _initoff);
+  setPWM(10 * abs(_speed) + _initoff);
 }
 
 
@@ -152,4 +115,5 @@ void Wheel::setPWM(int pwm) {
   else _pwm = pwm;
   analogWrite(_pwmPin, _pwm);
 }
+
 

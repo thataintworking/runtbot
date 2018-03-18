@@ -1,4 +1,4 @@
-// Wheel.h
+// wheel.h
 // Author: Ron Smith
 // Created: 2018-02-18
 // Copyright ©2018 That Ain't Working, All Rights Reserved
@@ -14,7 +14,7 @@ class Wheel {
 
     Wheel(String label, int pwmPin, int inaPin, int inbPin, int initoff, boolean debug);
 
-    Wheel(String label, int pwmPin, int inaPin, inbPin) : Wheel(label, pwmPin, inaPin, inbPin, 0, false) {}
+    Wheel(String label, int pwmPin, int inaPin, int inbPin) : Wheel(label, pwmPin, inaPin, inbPin, 0, false) {}
 
     ~Wheel();
 
@@ -35,8 +35,8 @@ class Wheel {
     void setInitOffset(int initoff) { _initoff = initoff; }
     int getInitOffset() { return _initoff; }
 
-    static const int MAX_FWD_SPEED = 20;
-    static const int MAX_REV_SPEED = -20;
+    static const int MAX_FWD_SPEED = 25;
+    static const int MAX_REV_SPEED = -25;
 
   private:
 
@@ -63,3 +63,4 @@ class Wheel {
 };
 
 #endif
+

@@ -92,4 +92,10 @@
 #define NOTE_D8  4699
 #define NOTE_DS8 4978
 
+void playCharge(int piezo);
+void playTaDa(int piezo);
+void playDaTa(int piezo);
+void playPlus(int piezo);
+void playMinus(int piezo);
+void playBonk(int piezo);
 
