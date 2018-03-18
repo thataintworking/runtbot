@@ -11,18 +11,19 @@
 const boolean WHEEL_DEBUG = false;
 
 // NOTE: Pins are set for Arduino UNO, NANO, or similar
-const int LEFT_DIR1     = A0;
-const int LEFT_DIR2     = A1;
-const int LEFT_PWM      = 5;    // OC0B
+const int LEFT_DIR1     = 14;   // A0
+const int LEFT_DIR2     = 15;   // A1
+const int LEFT_PWM      = 9;    // OC1A
 const int LEFT_ENC      = 2;	// INT0
-const int RIGHT_DIR1    = A2;
-const int RIGHT_DIR2    = A3;
-const int RIGHT_PWM     = 6;   	// OC0A
+const int RIGHT_DIR1    = 16;   // A2
+const int RIGHT_DIR2    = 17;   // A3
+const int RIGHT_PWM     = 10;  	// OC1B
 const int RIGHT_ENC     = 3;	// INT1
-const int TEST_BTN      = 10;
-const int PLUS_BTN      = 11;
-const int MINUS_BTN     = 12;
-const int PIEZO         = 8;
+const int TEST_BTN      = 5;
+const int PLUS_BTN      = 6;
+const int MINUS_BTN     = 7;
+const int PIEZO         = 12;
+const int LED           = 13;
 
 const unsigned long DEBOUNCE_DELAY = 300UL;       // milliseconds
 const unsigned long SENSOR_REPORT_FREQ = 1000UL;  // milliseconds
@@ -44,9 +45,12 @@ Wheel* rightWheel;
 MinIMU9 imu;
 
 void setup() {
-  // set timer 0 (pins 5 and 6) divisor to 1 for PWM frequency of 62500.00 Hz
-  TCCR0B = TCCR0B & B11111000 | B00000001;
-  
+  // set timer 1 (pins 9 & 10) divisor to 1 for PWM frequency of 31372.55 Hz
+  TCCR1B = TCCR1B & B11111000 | B00000001;
+
+  // don't mess with timer 0, it is used by delay(), millis(), etc.
+  // don't mess with timer 2, it is used by tone()
+
   Serial.begin(9600);
 
   Wire.begin(); // as master
@@ -63,8 +67,8 @@ void setup() {
   pinMode(PLUS_BTN, INPUT_PULLUP);
   pinMode(MINUS_BTN, INPUT_PULLUP);
 
-  pinMode(13, OUTPUT);
-  digitalWrite(13, LOW);
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, LOW);
 
   attachInterrupt(digitalPinToInterrupt(LEFT_ENC), leftEncoderTick, CHANGE);
   attachInterrupt(digitalPinToInterrupt(RIGHT_ENC), rightEncoderTick, CHANGE);
