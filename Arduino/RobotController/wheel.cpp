@@ -47,9 +47,7 @@ Wheel::Wheel(String label, int pwmPin, int inaPin, int inbPin, int initoff, bool
   pinMode(_pwmPin, OUTPUT);
   pinMode(_inaPin, OUTPUT);
   pinMode(_inbPin, OUTPUT);
-  analogWrite(_pwmPin, 0);
-  digitalWrite(_inaPin, LOW);
-  digitalWrite(_inbPin, LOW);
+  setSpeed(0);
 }
 
 
@@ -95,8 +93,13 @@ void Wheel::setSpeed(int s) {
   if (_debug) {
     Serial.print(_label);
     Serial.print(" Wheel: ");
-    Serial.print("Setting directrion to ");
-    Serial.print(_speed < 0 ? "REVERSE" : "FORWARD");
+    Serial.print("Setting direction to ");
+    Serial.print(_speed < 0 ? "REVERSE" : (_speed > 0 ? "FORWARD" : "STOP"));
+    Serial.print(" (ina ");
+    Serial.print(_speed >= 0 ? "LOW" : "HIGH");
+    Serial.print(", inb ");
+    Serial.print(_speed <= 0 ? "LOW" : "HIGH");
+    Serial.print(")");
   }
   digitalWrite(_inaPin, _speed >= 0 ? LOW : HIGH);
   digitalWrite(_inbPin, _speed <= 0 ? LOW : HIGH);
@@ -113,6 +116,12 @@ void Wheel::setPWM(int pwm) {
   if (pwm < 0) _pwm = 0;
   else if (pwm > 255) _pwm = 255;
   else _pwm = pwm;
+  if (_debug) {
+    Serial.print(_label);
+    Serial.print(" Wheel: ");
+    Serial.print("Setting PWM to ");
+    Serial.println(_pwm);
+  }
   analogWrite(_pwmPin, _pwm);
 }
 
