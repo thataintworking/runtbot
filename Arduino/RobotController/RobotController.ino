@@ -8,7 +8,7 @@
 #include "wheel.h"
 #include "minimu9.h"
 
-const boolean WHEEL_DEBUG = false;
+const boolean WHEEL_DEBUG = true;
 
 // NOTE: Pins are set for Arduino UNO, NANO, or similar
 const int LEFT_DIR1     = 14;   // A0
@@ -19,10 +19,10 @@ const int RIGHT_DIR1    = 16;   // A2
 const int RIGHT_DIR2    = 17;   // A3
 const int RIGHT_PWM     = 10;  	// OC1B
 const int RIGHT_ENC     = 3;	// INT1
-const int TEST_BTN      = 5;
+const int TEST_BTN      = 12;
 const int PLUS_BTN      = 6;
 const int MINUS_BTN     = 7;
-const int PIEZO         = 12;
+const int PIEZO         = 4;
 const int LED           = 13;
 
 const unsigned long DEBOUNCE_DELAY = 300UL;       // milliseconds
@@ -35,7 +35,7 @@ unsigned long reportTime = 0UL;
 
 boolean motorsOn = false;
 
-int speed = 1;
+int speed = 10;
 
 char sbuf[100];
 
@@ -55,8 +55,8 @@ void setup() {
 
   Wire.begin(); // as master
 
-  if (!imu.setup())
-    Serial.println("Failed to setup IMU!");
+//  if (!imu.setup())
+//    Serial.println("Failed to setup IMU!");
 
   leftWheel = new Wheel("Left", LEFT_PWM, LEFT_DIR1, LEFT_DIR2, 0, WHEEL_DEBUG);
   rightWheel = new Wheel("Right", RIGHT_PWM, RIGHT_DIR1, RIGHT_DIR2, 0, WHEEL_DEBUG);
@@ -83,8 +83,9 @@ void loop() {
   if (m > debounceTime) {
     if (!digitalRead(TEST_BTN)) {
       debounceTime = m + DEBOUNCE_DELAY;
-      if (motorsOn) stopMotors();
-      else {
+      if (motorsOn) {
+      	stopMotors();
+      } else {
         startMotors(speed);
         stopTime = millis() + 5000UL;  // 5 seconds
       }
@@ -119,21 +120,21 @@ void loop() {
 //    Serial.println(sbuf);
 //  }
 
-  if (motorsOn) {
+//  if (motorsOn) {
 //    if (m >= stopTime) {
 //      stopMotors();
 //    } else {
 //      leftWheel->adjust(m);
 //      rightWheel->adjust(m);
-      if (m > reportTime) {
-        reportTime = m + 500UL;
-        Serial.print("Tick Time: L=");
-        Serial.print(leftWheel->avgTickTime());
-        Serial.print("  R=");
-        Serial.println(rightWheel->avgTickTime());
-      }
+//      if (m > reportTime) {
+//        reportTime = m + 500UL;
+//        Serial.print("Tick Time: L=");
+//        Serial.print(leftWheel->avgTickTime());
+//        Serial.print("  R=");
+//        Serial.println(rightWheel->avgTickTime());
+//      }
 //    }
-  }
+//  }
 }
 
 void startMotors(int s) {
