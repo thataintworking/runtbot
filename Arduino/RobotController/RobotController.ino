@@ -4,29 +4,10 @@
 // Copyright ©2018 That Ain't Working, All Rights Reserved
 
 #include <Wire.h>
+#include "config.h"
 #include "piezo.h"
 #include "wheel.h"
 #include "minimu9.h"
-
-const boolean WHEEL_DEBUG = true;
-
-// NOTE: Pins are set for Arduino UNO, NANO, or similar
-const int LEFT_DIR1     = 14;   // A0
-const int LEFT_DIR2     = 15;   // A1
-const int LEFT_PWM      = 9;    // OC1A
-const int LEFT_ENC      = 2;	// INT0
-const int RIGHT_DIR1    = 16;   // A2
-const int RIGHT_DIR2    = 17;   // A3
-const int RIGHT_PWM     = 10;  	// OC1B
-const int RIGHT_ENC     = 3;	// INT1
-const int TEST_BTN      = 12;
-const int PLUS_BTN      = 6;
-const int MINUS_BTN     = 7;
-const int PIEZO         = 4;
-const int LED           = 13;
-
-const unsigned long DEBOUNCE_DELAY = 300UL;       // milliseconds
-const unsigned long SENSOR_REPORT_FREQ = 1000UL;  // milliseconds
 
 unsigned long debounceTime = 0UL;
 unsigned long nextSensorTime = 0UL;
