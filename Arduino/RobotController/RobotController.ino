@@ -1,4 +1,4 @@
-// MotorController
+// RobotController
 // Author: Ron Smith
 // Created: 2018-02-14
 // Copyright ©2018 That Ain't Working, All Rights Reserved
