@@ -15,15 +15,17 @@
 #define RIGHT_DIR2  17  // A3
 #define RIGHT_PWM   10  // OC1B
 #define RIGHT_ENC   3   // INT1
-#define TEST_BTN    12
-#define PLUS_BTN    6
-#define MINUS_BTN   7
+#define A_BTN       5
+#define B_BTN       6
+#define B_BTN       7
+#define PLUS_BTN    11
+#define MINUS_BTN   12
 #define PIEZO       4
 #define LED         13
 
 #define DEBOUNCE_DELAY      300UL  // milliseconds
 #define SENSOR_REPORT_FREQ 1000UL  // milliseconds
 
-#define WHEEL_DEBUG     true;
+#define WHEEL_DEBUG     true
 
 #endif // CONFIG_H_

@@ -44,7 +44,7 @@ void setup() {
 
   pinMode(LEFT_ENC, INPUT);
   pinMode(RIGHT_ENC, INPUT);
-  pinMode(TEST_BTN, INPUT_PULLUP);
+  pinMode(A_BTN, INPUT_PULLUP);
   pinMode(PLUS_BTN, INPUT_PULLUP);
   pinMode(MINUS_BTN, INPUT_PULLUP);
 
@@ -62,7 +62,7 @@ void loop() {
   unsigned long m = millis();
 
   if (m > debounceTime) {
-    if (!digitalRead(TEST_BTN)) {
+    if (!digitalRead(A_BTN)) {
       debounceTime = m + DEBOUNCE_DELAY;
       if (motorsOn) {
       	stopMotors();

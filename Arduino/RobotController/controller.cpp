@@ -6,13 +6,13 @@
 #include <avr/io.h>
 
 
-int main(void) {
-
-    // TODO: setup code goes here
-
-    while(1) {  // main loop
-        // TODO
-    }
-
-    return 0;
-}
+//int main(void) {
+//
+//    // TODO: setup code goes here
+//
+//    while(1) {  // main loop
+//        // TODO
+//    }
+//
+//    return 0;
+//}
