@@ -1,28 +1,13 @@
-// MotorController
+// RobotController
 // Author: Ron Smith
 // Created: 2018-02-14
 // Copyright ©2018 That Ain't Working, All Rights Reserved
 
 #include <Wire.h>
-#include "pitches.h"
-#include "Wheel.h"
-#include "MinIMU9.h"
-
-const boolean WHEEL_DEBUG = false;
-
-const int LEFT_MOTOR_DIR  = 7;
-const int LEFT_MOTOR_PWM  = 6;
-const int LEFT_MOTOR_ENC  = 3;
-const int RIGHT_MOTOR_DIR = 9;
-const int RIGHT_MOTOR_PWM = 8;
-const int RIGHT_MOTOR_ENC = 2;
-const int TEST_BTN        = 53;
-const int PLUS_BTN        = A6;
-const int MINUS_BTN       = A7;
-const int PIEZO           = 45;
-
-const unsigned long DEBOUNCE_DELAY = 300UL;       // milliseconds
-const unsigned long SENSOR_REPORT_FREQ = 1000UL;  // milliseconds
+#include "config.h"
+#include "piezo.h"
+#include "wheel.h"
+#include "minimu9.h"
 
 unsigned long debounceTime = 0UL;
 unsigned long nextSensorTime = 0UL;
@@ -31,7 +16,7 @@ unsigned long reportTime = 0UL;
 
 boolean motorsOn = false;
 
-int speed = 1;
+int speed = 10;
 
 char sbuf[100];
 
@@ -41,29 +26,35 @@ Wheel* rightWheel;
 MinIMU9 imu;
 
 void setup() {
-  // set Arduino Mega's timer 4 (pins 6, 7, 8) to freq 31250 to work better with the motors
-  TCCR4B = TCCR4B & 0b11111000 | 0x01;
-  
+  // set timer 1 (pins 9 & 10) divisor to 1 for PWM frequency of 31372.55 Hz
+  TCCR1B = TCCR1B & B11111000 | B00000001;
+
+  // don't mess with timer 0, it is used by delay(), millis(), etc.
+  // don't mess with timer 2, it is used by tone()
+
   Serial.begin(9600);
 
   Wire.begin(); // as master
 
-  if (!imu.setup())
-    Serial.println("Failed to setup IMU!");
+//  if (!imu.setup())
+//    Serial.println("Failed to setup IMU!");
 
-  leftWheel = new Wheel("Left", LEFT_MOTOR_PWM, LEFT_MOTOR_DIR, 0, WHEEL_DEBUG);
-  rightWheel = new Wheel("Right", RIGHT_MOTOR_PWM, RIGHT_MOTOR_DIR, 0, WHEEL_DEBUG);
+  leftWheel = new Wheel("Left", LEFT_PWM, LEFT_DIR1, LEFT_DIR2, 0, WHEEL_DEBUG);
+  rightWheel = new Wheel("Right", RIGHT_PWM, RIGHT_DIR1, RIGHT_DIR2, 0, WHEEL_DEBUG);
 
-  pinMode(LEFT_MOTOR_ENC, INPUT);
-  pinMode(RIGHT_MOTOR_ENC, INPUT);
-  pinMode(TEST_BTN, INPUT_PULLUP);
+  pinMode(LEFT_ENC, INPUT);
+  pinMode(RIGHT_ENC, INPUT);
+  pinMode(A_BTN, INPUT_PULLUP);
   pinMode(PLUS_BTN, INPUT_PULLUP);
   pinMode(MINUS_BTN, INPUT_PULLUP);
 
-  attachInterrupt(digitalPinToInterrupt(LEFT_MOTOR_ENC), leftEncoderTick, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(RIGHT_MOTOR_ENC), rightEncoderTick, CHANGE);
+  pinMode(LED, OUTPUT);
+  digitalWrite(LED, LOW);
 
-  playTaDa();
+  attachInterrupt(digitalPinToInterrupt(LEFT_ENC), leftEncoderTick, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(RIGHT_ENC), rightEncoderTick, CHANGE);
+
+  playTaDa(PIEZO);
 }
 
 
@@ -71,10 +62,11 @@ void loop() {
   unsigned long m = millis();
 
   if (m > debounceTime) {
-    if (!digitalRead(TEST_BTN)) {
+    if (!digitalRead(A_BTN)) {
       debounceTime = m + DEBOUNCE_DELAY;
-      if (motorsOn) stopMotors();
-      else {
+      if (motorsOn) {
+      	stopMotors();
+      } else {
         startMotors(speed);
         stopTime = millis() + 5000UL;  // 5 seconds
       }
@@ -83,18 +75,18 @@ void loop() {
       if (speed < Wheel::MAX_FWD_SPEED) {
         Serial.print("Speed increased to ");
         Serial.println(++speed);
-        playPlus();
+        playPlus(PIEZO);
       } else {
-        playBonk();
+        playBonk(PIEZO);
       }
     } else if (!digitalRead(MINUS_BTN)) {
       debounceTime = m + DEBOUNCE_DELAY;
       if (speed > 1) {
         Serial.print("Speed decreased to ");
         Serial.println(--speed);
-        playMinus();
+        playMinus(PIEZO);
       } else {
-        playBonk();
+        playBonk(PIEZO);
       }
     }
   }
@@ -109,25 +101,25 @@ void loop() {
 //    Serial.println(sbuf);
 //  }
 
-  if (motorsOn) {
+//  if (motorsOn) {
 //    if (m >= stopTime) {
 //      stopMotors();
 //    } else {
 //      leftWheel->adjust(m);
 //      rightWheel->adjust(m);
-      if (m > reportTime) {
-        reportTime = m + 500UL;
-        Serial.print("Tick Time: L=");
-        Serial.print(leftWheel->avgTickTime());
-        Serial.print("  R=");
-        Serial.println(rightWheel->avgTickTime());
-      }
+//      if (m > reportTime) {
+//        reportTime = m + 500UL;
+//        Serial.print("Tick Time: L=");
+//        Serial.print(leftWheel->avgTickTime());
+//        Serial.print("  R=");
+//        Serial.println(rightWheel->avgTickTime());
+//      }
 //    }
-  }
+//  }
 }
 
 void startMotors(int s) {
-  playCharge();
+  playCharge(PIEZO);
   Serial.println("Motors on");
   leftWheel->setSpeed(s);
   rightWheel->setSpeed(s);
@@ -139,7 +131,7 @@ void stopMotors() {
   leftWheel->setSpeed(0);
   rightWheel->setSpeed(0);
   motorsOn = false;
-  playDaTa();
+  playDaTa(PIEZO);
 }
 
 // Interrupt handler for left wheel encoder that counts the ticks
@@ -151,58 +143,5 @@ void leftEncoderTick() {
 // Interrupt handler for right wheel encoder that counts the ticks
 void rightEncoderTick() {
   rightWheel->tick();
-}
-
-
-void playCharge() {
-  tone(PIEZO, NOTE_C5, 150);
-  delay(150);
-  tone(PIEZO, NOTE_E5, 150);
-  delay(150);
-  tone(PIEZO, NOTE_F5, 150);
-  delay(200);
-  tone(PIEZO, NOTE_G5, 300);
-  delay(400);
-  tone(PIEZO, NOTE_E5, 150);
-  delay(150);
-  tone(PIEZO, NOTE_G5, 500);
-  delay(500);
-  noTone(PIEZO);
-}
-
-
-void playTaDa() {
-  tone(PIEZO, NOTE_C5, 200);
-  delay(200);
-  tone(PIEZO, NOTE_G5, 500);
-  delay(500);
-  noTone(PIEZO);
-}
-
-
-void playDaTa() {
-  tone(PIEZO, NOTE_G5, 200);
-  delay(200);
-  tone(PIEZO, NOTE_C5, 500);
-  delay(500);
-  noTone(PIEZO);
-}
-
-void playPlus() {
-  tone(PIEZO, NOTE_G5, 500);
-  delay(500);
-  noTone(PIEZO);
-}
-
-void playMinus() {
-  tone(PIEZO, NOTE_C5, 500);
-  delay(500);
-  noTone(PIEZO);
-}
-
-void playBonk() {
-  tone(PIEZO, NOTE_C3, 500);
-  delay(500);
-  noTone(PIEZO);
 }
 

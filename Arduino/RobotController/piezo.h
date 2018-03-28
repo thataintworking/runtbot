@@ -1,6 +1,10 @@
-/*************************************************
- * Public Constants
- *************************************************/
+// piezo.h
+// Author: Ron Smith
+// Created: 2018-02-18
+// Copyright ©2018 That Ain't Working, All Rights Reserved
+
+#ifndef PIEZO_H_
+#define PIEZO_H_
 
 #define NOTE_B0  31
 #define NOTE_C1  33
@@ -92,4 +96,11 @@
 #define NOTE_D8  4699
 #define NOTE_DS8 4978
 
+void playCharge(int piezo);
+void playTaDa(int piezo);
+void playDaTa(int piezo);
+void playPlus(int piezo);
+void playMinus(int piezo);
+void playBonk(int piezo);
 
+#endif  // PIEZO_H_

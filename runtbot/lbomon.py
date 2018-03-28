@@ -16,17 +16,21 @@ import os
 import RPi.GPIO as GPIO
 from time import sleep
 
+LBO_PIN = 25
+
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(LBO_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
 lbo_count = 0
 
 shutdown_pending = False
 
+print("Begin listening on GPIO pin", LBO_PIN)
+
 while True:
     sleep(5)
     if not shutdown_pending:
-        if GPIO.input(18):
+        if GPIO.input(LBO_PIN):
             lbo_count += 1
         else:
             lbo_count = 0
@@ -37,7 +41,7 @@ while True:
             lbo_count = 0
 
     else:
-        if not GPIO.input(18):
+        if not GPIO.input(LBO_PIN):
             lbo_count += 1
 
         if lbo_count > 2:
