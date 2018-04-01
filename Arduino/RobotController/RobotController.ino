@@ -3,11 +3,10 @@
 // Created: 2018-02-14
 // Copyright ©2018 That Ain't Working, All Rights Reserved
 
-#include <Wire.h>
 #include "config.h"
 #include "piezo.h"
 #include "wheel.h"
-#include "minimu9.h"
+#include "i2c_handler.h"
 
 unsigned long debounceTime = 0UL;
 unsigned long nextSensorTime = 0UL;
@@ -23,7 +22,6 @@ char sbuf[100];
 Wheel* leftWheel;
 Wheel* rightWheel;
 
-MinIMU9 imu;
 
 void setup() {
   // set timer 1 (pins 9 & 10) divisor to 1 for PWM frequency of 31372.55 Hz
@@ -34,25 +32,17 @@ void setup() {
 
   Serial.begin(9600);
 
-  Wire.begin(); // as master
-
-//  if (!imu.setup())
-//    Serial.println("Failed to setup IMU!");
-
   leftWheel = new Wheel("Left", LEFT_PWM, LEFT_DIR1, LEFT_DIR2, 0, WHEEL_DEBUG);
   rightWheel = new Wheel("Right", RIGHT_PWM, RIGHT_DIR1, RIGHT_DIR2, 0, WHEEL_DEBUG);
 
-  pinMode(LEFT_ENC, INPUT);
-  pinMode(RIGHT_ENC, INPUT);
+  I2C_Slave(leftWheel, rightWheel)
+
   pinMode(A_BTN, INPUT_PULLUP);
   pinMode(PLUS_BTN, INPUT_PULLUP);
   pinMode(MINUS_BTN, INPUT_PULLUP);
 
   pinMode(LED, OUTPUT);
   digitalWrite(LED, LOW);
-
-  attachInterrupt(digitalPinToInterrupt(LEFT_ENC), leftEncoderTick, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(RIGHT_ENC), rightEncoderTick, CHANGE);
 
   playTaDa(PIEZO);
 }
@@ -90,32 +80,6 @@ void loop() {
       }
     }
   }
-
-//  if (imu.ok() && m >= nextSensorTime) {
-//    nextSensorTime = m + SENSOR_REPORT_FREQ;
-//    Readings r = imu.readAll();
-//    snprintf(sbuf, sizeof(sbuf), "A: %6d %6d %6d   G: %6d %6d %6d   M: %6d %6d %6d",
-//      r.a.x, r.a.y, r.a.z,
-//      r.g.x, r.g.y, r.g.z,
-//      r.m.x, r.m.y, r.m.z);
-//    Serial.println(sbuf);
-//  }
-
-//  if (motorsOn) {
-//    if (m >= stopTime) {
-//      stopMotors();
-//    } else {
-//      leftWheel->adjust(m);
-//      rightWheel->adjust(m);
-//      if (m > reportTime) {
-//        reportTime = m + 500UL;
-//        Serial.print("Tick Time: L=");
-//        Serial.print(leftWheel->avgTickTime());
-//        Serial.print("  R=");
-//        Serial.println(rightWheel->avgTickTime());
-//      }
-//    }
-//  }
 }
 
 void startMotors(int s) {
@@ -133,15 +97,3 @@ void stopMotors() {
   motorsOn = false;
   playDaTa(PIEZO);
 }
-
-// Interrupt handler for left wheel encoder that counts the ticks
-void leftEncoderTick() {
-  leftWheel->tick();
-}
-
-
-// Interrupt handler for right wheel encoder that counts the ticks
-void rightEncoderTick() {
-  rightWheel->tick();
-}
-

@@ -6,6 +6,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#define I2C_ADDR    0x22
+
 // NOTE: Pins are set for Arduino UNO, NANO, or similar
 #define LEFT_DIR1   14  // A0
 #define LEFT_DIR2   15  // A1
